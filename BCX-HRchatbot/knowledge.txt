@@ -1,0 +1,41 @@
+My AI Project
+
+This AI assistant is called ByteCodX HR AI (BCX-HRchatbot).
+
+It is developed using Python and FastAPI with an intelligent RAG system and Ollama LLM support.
+
+The purpose of this AI is to answer questions about ByteCodX, HR policies, employee services, recruitment, attendance, leaves, and documents provided by users.
+
+Company Overview
+
+Company Name: ByteCodX (BCX)
+Product: ByteCodX Enterprise HR Management Platform
+Website: ByteCodX HR Portal
+
+Executive Leadership Team:
+- Joel Kirubainathan: Chief Executive Officer (CEO)
+- Poovarasan: Chief Technology Officer (CTO)
+- Dharun: Chief Operating Officer (COO)
+- Sugasini: Chief Strategy Officer (CSO)
+- Sri Abinaya: Chief Marketing Officer (CMO)
+
+Key Services and Capabilities:
+1. HR Operations: Smart workforce management, attendance tracking, onboarding, offboarding, leave management, and policy compliance workflows.
+2. Talent Experience: Recruitment lifecycle, applicant tracking, employee self-service portal, profile management, and performance tracking.
+3. Business Planning: Executive dashboards, KPI reports, project and task management, ROI calculations, and secure role-based access control.
+
+HR Modules in the Platform:
+- Employees directory and profiles
+- Attendance calendar and daily check-in / check-out
+- Leave management and automated leave balance deduction (Casual, Sick, Earned, Emergency)
+- Task management and Project management
+- Recruitment and job vacancy postings
+- Onboarding and offboarding workflows
+- Feedback, reviews, and reporting analytics
+- Secure authentication with role-based permissions
+
+Careers and Opportunities:
+ByteCodX is actively hiring for positions including Senior Frontend Engineer (Engineering), People Operations Manager (Human Resources), and Business Analyst (Strategy). Applications can be submitted directly through the ByteCodX Careers portal.
+
+Document and Policy Q&A:
+Users can upload company HR policy PDFs, offer letters, manuals, or documents directly into this chat to ask questions and get instant answers extracted from their uploaded files.

@@ -1,0 +1,896 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MyCustomLLM AI</title>
+
+<style>
+
+/* =================================
+   1. GLOBAL DESIGN
+================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --chat-bg: #ffffff;
+    --message-area: #f4f6fb;
+    --bot-bubble: #ffffff;
+    --text-color: #202938;
+    --border-color: #e5e7eb;
+    --input-bg: #ffffff;
+    --muted-color: #64748b;
+}
+
+body.dark {
+    --chat-bg: #1e293b;
+    --message-area: #111827;
+    --bot-bubble: #334155;
+    --text-color: #f8fafc;
+    --border-color: #475569;
+    --input-bg: #1e293b;
+    --muted-color: #cbd5e1;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+
+/* =================================
+   2. FLOATING CHAT BUTTON
+================================= */
+
+#chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+
+    width: 65px;
+    height: 65px;
+
+    background: #3563e9;
+    color: white;
+
+    border: none;
+    border-radius: 50%;
+
+    font-size: 28px;
+    cursor: pointer;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+
+    z-index: 9999;
+}
+
+
+/* =================================
+   3. CHAT WINDOW
+================================= */
+
+#chat-window {
+    display: none;
+
+    position: fixed;
+    bottom: 105px;
+    right: 25px;
+
+    width: 390px;
+    height: 535px;
+
+    background: var(--chat-bg);
+
+    border-radius: 18px;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+
+    overflow: hidden;
+
+    flex-direction: column;
+
+    z-index: 9998;
+}
+
+
+/* =================================
+   4. BLUE CHAT HEADER
+================================= */
+
+#chat-header {
+    min-height: 72px;
+
+    background: #3563e9;
+    color: white;
+
+    padding: 12px 16px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-icon {
+    width: 43px;
+    height: 43px;
+
+    border-radius: 50%;
+
+    background: white;
+    color: #3563e9;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.brand-info h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.brand-info small {
+    font-size: 11px;
+    color: #dbeafe;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-actions button {
+    background: transparent;
+    color: white;
+
+    border: none;
+
+    font-size: 19px;
+    cursor: pointer;
+
+    padding: 5px;
+}
+
+
+/* =================================
+   5. CHAT MESSAGE AREA
+================================= */
+
+#chat-messages {
+    flex: 1;
+    min-height: 0;
+
+    padding: 17px;
+
+    overflow-y: auto;
+
+    background: var(--message-area);
+}
+
+.message {
+    padding: 12px 15px;
+
+    margin-bottom: 13px;
+
+    border-radius: 15px;
+
+    max-width: 85%;
+
+    font-size: 14px;
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.bot-message {
+    background: var(--bot-bubble);
+    color: var(--text-color);
+
+    margin-right: auto;
+    text-align: left;
+}
+
+.user-message {
+    background: #3563e9;
+    color: white;
+
+    margin-left: auto;
+}
+
+
+/* =================================
+   6. TYPING ANIMATION
+================================= */
+
+.typing-indicator {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 3px;
+}
+
+.typing-indicator span {
+    width: 7px;
+    height: 7px;
+
+    background: #64748b;
+    border-radius: 50%;
+
+    animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+
+    30% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+
+/* =================================
+   7. BOTTOM INPUT AREA
+================================= */
+
+#chat-input-area {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 12px;
+
+    background: var(--chat-bg);
+
+    border-top: 1px solid var(--border-color);
+}
+
+#user-input {
+    flex: 1;
+    min-width: 0;
+
+    padding: 13px 15px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    font-size: 14px;
+    outline: none;
+}
+
+#user-input::placeholder {
+    color: var(--muted-color);
+}
+
+#send-button {
+    background: #3563e9;
+    color: white;
+
+    border: none;
+    border-radius: 25px;
+
+    padding: 13px 17px;
+
+    cursor: pointer;
+}
+
+#send-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upload-button {
+    cursor: pointer;
+    font-size: 22px;
+    padding: 5px;
+    color: var(--muted-color);
+}
+
+#upload-status {
+    background: var(--chat-bg);
+    color: var(--muted-color);
+
+    font-size: 11px;
+
+    padding: 0 12px 8px;
+}
+
+
+/* =================================
+   8. MOBILE RESPONSIVE DESIGN
+================================= */
+
+@media (max-width: 480px) {
+
+    #chat-window {
+        width: calc(100% - 30px);
+        height: 70vh;
+
+        right: 15px;
+        bottom: 90px;
+    }
+
+    #chat-button {
+        right: 15px;
+        bottom: 15px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- FLOATING CHAT BUTTON -->
+
+<button id="chat-button" aria-label="Open chatbot">
+    💬
+</button>
+
+
+<!-- CHAT WINDOW -->
+
+<div id="chat-window">
+
+
+    <!-- HEADER -->
+
+    <div id="chat-header">
+
+        <div class="brand">
+
+            <div class="profile-icon">
+                AI
+            </div>
+
+            <div class="brand-info">
+
+                <h3>MyCustomLLM AI</h3>
+
+                <small>Your personal AI assistant</small>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <button id="theme-toggle" title="Change theme">
+                🌙
+            </button>
+
+            <button id="clear-chat" title="Clear chat">
+                🗑️
+            </button>
+
+            <button id="close-chat" title="Close">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- CHAT MESSAGES -->
+
+    <div id="chat-messages"></div>
+
+
+    <!-- INPUT AREA -->
+
+    <div id="chat-input-area">
+
+        <label
+            for="pdf-upload"
+            class="upload-button"
+            title="Upload PDF"
+        >
+            📎
+        </label>
+
+        <input
+            type="file"
+            id="pdf-upload"
+            accept=".pdf,application/pdf"
+            hidden
+        >
+
+        <input
+            type="text"
+            id="user-input"
+            placeholder="Ask me anything..."
+        >
+
+        <button id="send-button">
+            Send
+        </button>
+
+    </div>
+
+    <div id="upload-status"></div>
+
+</div>
+
+
+<script>
+
+/* =================================
+   1. GET HTML ELEMENTS
+================================= */
+
+const chatButton = document.getElementById("chat-button");
+
+const chatWindow = document.getElementById("chat-window");
+
+const closeButton = document.getElementById("close-chat");
+
+const sendButton = document.getElementById("send-button");
+
+const userInput = document.getElementById("user-input");
+
+const chatMessages = document.getElementById("chat-messages");
+
+const themeToggle = document.getElementById("theme-toggle");
+
+const clearButton = document.getElementById("clear-chat");
+
+const pdfUpload = document.getElementById("pdf-upload");
+
+const uploadStatus = document.getElementById("upload-status");
+
+
+/* =================================
+   2. CREATE CONVERSATION ID
+================================= */
+
+let sessionId = localStorage.getItem("chatSession");
+
+if (!sessionId) {
+
+    sessionId = crypto.randomUUID();
+
+    localStorage.setItem("chatSession", sessionId);
+
+}
+
+
+/* =================================
+   3. OPEN AND CLOSE CHAT
+================================= */
+
+chatButton.addEventListener("click", () => {
+
+    chatWindow.style.display = "flex";
+
+    chatButton.style.display = "none";
+
+    userInput.focus();
+
+});
+
+
+closeButton.addEventListener("click", () => {
+
+    chatWindow.style.display = "none";
+
+    chatButton.style.display = "block";
+
+});
+
+
+/* =================================
+   4. DISPLAY CHAT MESSAGES
+================================= */
+
+function addMessage(message, sender) {
+
+    const messageElement = document.createElement("div");
+
+    messageElement.classList.add(
+        "message",
+        sender === "user" ? "user-message" : "bot-message"
+    );
+
+    // Use textContent to safely display messages
+    messageElement.textContent = message;
+
+    chatMessages.appendChild(messageElement);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    return messageElement;
+
+}
+
+
+/* =================================
+   5. SAVE CHAT DISPLAY HISTORY
+================================= */
+
+function saveChat() {
+
+    const messages = [];
+
+    chatMessages.querySelectorAll(".message").forEach(element => {
+
+        if (!element.classList.contains("typing-message")) {
+
+            messages.push({
+                text: element.textContent,
+                sender: element.classList.contains("user-message")
+                    ? "user"
+                    : "bot"
+            });
+
+        }
+
+    });
+
+    localStorage.setItem(
+        "chatMessages",
+        JSON.stringify(messages)
+    );
+
+}
+
+
+function loadChat() {
+
+    const savedMessages = JSON.parse(
+        localStorage.getItem("chatMessages") || "[]"
+    );
+
+    if (savedMessages.length === 0) {
+
+        addMessage(
+            "Hello! Welcome to MyCustomLLM. How can I help you today?",
+            "bot"
+        );
+
+        return;
+
+    }
+
+    savedMessages.forEach(message => {
+
+        addMessage(message.text, message.sender);
+
+    });
+
+}
+
+loadChat();
+
+
+/* =================================
+   6. TYPING INDICATOR
+================================= */
+
+function showTyping() {
+
+    const typingElement = document.createElement("div");
+
+    typingElement.className =
+        "message bot-message typing-message";
+
+    typingElement.innerHTML = `
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+
+    chatMessages.appendChild(typingElement);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    return typingElement;
+
+}
+
+
+/* =================================
+   7. SEND MESSAGE TO AI
+================================= */
+
+let sending = false;
+
+async function sendMessage() {
+
+    const question = userInput.value.trim();
+
+    if (!question || sending) return;
+
+    sending = true;
+
+    sendButton.disabled = true;
+
+    addMessage(question, "user");
+
+    saveChat();
+
+    userInput.value = "";
+
+    const typingMessage = showTyping();
+
+    try {
+
+        const response = await fetch("/ask", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                question: question,
+
+                session_id: sessionId
+
+            })
+
+        });
+
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail || "AI request failed."
+            );
+
+        }
+
+        typingMessage.remove();
+
+        addMessage(data.answer, "bot");
+
+        saveChat();
+
+    }
+
+    catch (error) {
+
+        typingMessage.remove();
+
+        addMessage(
+            "Sorry, something went wrong: " + error.message,
+            "bot"
+        );
+
+        saveChat();
+
+    }
+
+    finally {
+
+        sending = false;
+
+        sendButton.disabled = false;
+
+        userInput.focus();
+
+    }
+
+}
+
+
+sendButton.addEventListener("click", sendMessage);
+
+
+userInput.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter") {
+
+        sendMessage();
+
+    }
+
+});
+
+
+/* =================================
+   8. DARK AND LIGHT THEME
+================================= */
+
+function applyTheme(theme) {
+
+    document.body.classList.toggle(
+        "dark",
+        theme === "dark"
+    );
+
+    themeToggle.textContent =
+        theme === "dark" ? "☀️" : "🌙";
+
+    localStorage.setItem("chatTheme", theme);
+
+}
+
+
+themeToggle.addEventListener("click", () => {
+
+    const newTheme =
+        document.body.classList.contains("dark")
+            ? "light"
+            : "dark";
+
+    applyTheme(newTheme);
+
+});
+
+
+applyTheme(
+    localStorage.getItem("chatTheme") || "light"
+);
+
+
+/* =================================
+   9. CLEAR CHAT AND MEMORY
+================================= */
+
+clearButton.addEventListener("click", async () => {
+
+    if (!confirm("Are you sure you want to clear this conversation?")) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/memory/${encodeURIComponent(sessionId)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if (!response.ok) {
+
+            throw new Error("Could not clear conversation.");
+
+        }
+
+        chatMessages.innerHTML = "";
+
+        localStorage.removeItem("chatMessages");
+
+        addMessage(
+            "Hello! Welcome to MyCustomLLM. How can I help you today?",
+            "bot"
+        );
+
+        saveChat();
+
+    }
+
+    catch (error) {
+
+        alert(error.message);
+
+    }
+
+});
+
+
+/* =================================
+   10. UPLOAD PDF
+================================= */
+
+pdfUpload.addEventListener("change", async () => {
+
+    const file = pdfUpload.files[0];
+
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+
+        uploadStatus.textContent =
+            "PDF must be smaller than 10 MB.";
+
+        pdfUpload.value = "";
+
+        return;
+
+    }
+
+    uploadStatus.textContent = "Uploading PDF...";
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    formData.append("session_id", sessionId);
+
+    try {
+
+        const response = await fetch("/upload-pdf", {
+
+            method: "POST",
+
+            body: formData
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail || "PDF upload failed."
+            );
+
+        }
+
+        uploadStatus.textContent =
+            "Uploaded: " + data.filename;
+
+        addMessage(
+            "Your PDF has been uploaded successfully! You can now ask questions about it.",
+            "bot"
+        );
+
+        saveChat();
+
+    }
+
+    catch (error) {
+
+        uploadStatus.textContent =
+            "Upload error: " + error.message;
+
+    }
+
+    finally {
+
+        pdfUpload.value = "";
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>

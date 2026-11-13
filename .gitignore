@@ -8,3 +8,10 @@ Thumbs.db
 
 # Environment files
 .env*.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter_Tight, Outfit, Urbanist } from "next/font/google";
 import type { ReactNode } from "react";
 import { ButtonEffects } from "@/components/ButtonEffects";
+import { ChatbotWidget } from "@/components/ChatbotWidget";
 import { CinematicScrollMotion } from "@/components/CinematicScrollMotion";
 import { ScrollRevealMotion } from "@/components/ScrollRevealMotion";
 import "./globals.css";
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ScrollRevealMotion />
         <CinematicScrollMotion />
         {children}
+        <ChatbotWidget />
       </body>
     </html>
   );
